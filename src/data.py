@@ -11,7 +11,6 @@ def clean_corrupted(dir_name):
     num_skipped = 0
     for folder_name in os.listdir(dir_name):
         folder_path = os.path.join(dir_name, folder_name)
-        print(folder_name)
         if os.path.isdir(folder_path):
             for fname in os.listdir(folder_path):
                 fpath = os.path.join(folder_path, fname)
@@ -33,9 +32,37 @@ def png_to_jpg(dir_path):
         folder_path = os.path.join(dir_path, folder_name)
         for file in os.listdir(folder_path):
             fpath = os.path.join(folder_path, file)
-            if fpath.endswith('.png'): # check if file is png
-                im = Image.open(fpath).convert("RGB") # open file as an image object
-                im.save(fpath[:-4] + '.jpg', quality=95, optimize=True) # save image as jpg with options
+            if fpath.endswith('.png'): 
+                im = Image.open(fpath).convert("RGB")
+                im.save(fpath[:-4] + '.jpg', quality=95, optimize=True) 
                 os.remove(fpath)
 
-#png_to_jpg("../handwritten-mathematical-expressions/finaltest")
+def create_dataset():
+    image_size = (180, 180)
+    batch_size = 128
+
+    train, val = keras.utils.image_dataset_from_directory(
+        "../handwritten-mathematical-expressions/finaltrain",
+        validation_split=0.2,
+        subset="both",
+        seed=1337,
+        image_size=image_size,
+        batch_size=batch_size,
+    )
+    test = keras.utils.image_dataset_from_directory(
+        "../handwritten-mathematical-expressions/finaltest",
+        seed=1337,
+        image_size=image_size,
+        batch_size=batch_size,
+    )
+    return (train, val, test)
+
+def clean_data_files():
+    png_to_jpg("../handwritten-mathematical-expressions/finaltrain")
+    png_to_jpg("../handwritten-mathematical-expressions/finaltest")
+    clean_corrupted("../handwritten-mathematical-expressions/finaltrain")
+    clean_corrupted("../handwritten-mathematical-expressions/finaltest")
+
+def get_data():
+    clean_data_files()
+    train, val, test = create_dataset()
