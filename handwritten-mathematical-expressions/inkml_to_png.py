@@ -60,14 +60,12 @@ def inkml2img(input_path, output_path):
     path = path[0]+'_'
     file_name = 0
     for elem in traces:
+        plt.gcf().clear()
+        plt.axis('off')
         plt.gca().invert_yaxis()
         plt.gca().set_aspect('equal', adjustable='box')
-        plt.axes().get_xaxis().set_visible(False)
-        plt.axes().get_yaxis().set_visible(False)
-        plt.axes().spines['top'].set_visible(False)
-        plt.axes().spines['right'].set_visible(False)
-        plt.axes().spines['bottom'].set_visible(False)
-        plt.axes().spines['left'].set_visible(False)
+
+        
         ls = elem['trace_group']
         output_path = output_path  
         
@@ -100,10 +98,8 @@ for filename in ["/CROHME_training_2011", "/trainData_2012_part1", "/trainData_2
     for file in tqdm(files):
         if file.endswith('.inkml'):
             inkml2img(path+filename+'/'+file,'./finaltrain/')
-
-
     
-files = os.listdir(path+"/CROHME_test_2011")
+files = os.listdir(path+"/MatricesTest2014")
 for file in tqdm(files):
     if file.endswith('.inkml'):
-        inkml2img(path+'/CROHME_test_2011/'+file,'./finaltest/')
+        inkml2img(path+'/MatricesTest2014/'+file,'./finaltest/')
