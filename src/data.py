@@ -5,7 +5,32 @@ from keras import layers
 from tensorflow import data as tf_data
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from PIL import Image 
+from PIL import Image
+
+data_augmentation_layers = [
+    layers.RandomFlip("horizontal"),
+    layers.RandomRotation(0.1),
+]
+
+def plot_pictures(data):
+    plt.figure(figsize=(10, 10))
+    for images, labels in data.take(1):
+        for i in range(9):
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(np.array(images[i]).astype("uint8"))
+            plt.title(data.class_names[int(labels[i])])
+            plt.axis("off")
+    plt.show()
+
+def visualise_augmentation(data):
+    plt.figure(figsize=(10, 10))
+    for images, _ in data.take(1):
+        for i in range(9):
+            augmented_images = data_augmentation(images)
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(np.array(augmented_images[0]).astype("uint8"))
+            plt.axis("off")
+    plt.show()
 
 def clean_corrupted(dir_name):
     num_skipped = 0
@@ -38,8 +63,8 @@ def png_to_jpg(dir_path):
                 os.remove(fpath)
 
 def create_dataset():
-    image_size = (180, 180)
-    batch_size = 128
+    image_size = (128, 128)
+    batch_size = 64
 
     train, val = keras.utils.image_dataset_from_directory(
         "../handwritten-mathematical-expressions/finaltrain",
@@ -57,6 +82,11 @@ def create_dataset():
     )
     return (train, val, test)
 
+def data_augmentation(images):
+    for layer in data_augmentation_layers:
+        images = layer(images)
+    return images
+
 def clean_data_files():
     png_to_jpg("../handwritten-mathematical-expressions/finaltrain")
     png_to_jpg("../handwritten-mathematical-expressions/finaltest")
@@ -66,3 +96,18 @@ def clean_data_files():
 def get_data():
     clean_data_files()
     train, val, test = create_dataset()
+    plot_pictures(train)
+
+    # Apply `data_augmentation` to the training images.
+    train = train.map(
+        lambda img, label: (data_augmentation(img), label),
+        num_parallel_calls=tf_data.AUTOTUNE,
+    )
+    # Prefetching samples in GPU memory helps maximize GPU utilization.
+    train = train.prefetch(tf_data.AUTOTUNE)
+    val = val.prefetch(tf_data.AUTOTUNE)
+
+    visualise_augmentation(train)
+    
+
+get_data()
