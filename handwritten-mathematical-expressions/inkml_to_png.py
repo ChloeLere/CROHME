@@ -60,11 +60,17 @@ def inkml2img(input_path, output_path):
     path = path[0]+'_'
     file_name = 0
     for elem in traces:
-        plt.gcf().clear()
-        plt.axis('off')
-        plt.gca().invert_yaxis()
-        plt.gca().set_aspect('equal', adjustable='box')
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.invert_yaxis()
 
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+
+        # Hide the spines (borders)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
         
         ls = elem['trace_group']
         output_path = output_path  
@@ -91,13 +97,15 @@ def inkml2img(input_path, output_path):
         else:
             plt.savefig(ind_output_path+'/'+path+str(file_name)+'.png', bbox_inches='tight', dpi=100)
         plt.gcf().clear()
+        plt.close(fig)
 
-for filename in ["/CROHME_training_2011", "/trainData_2012_part1", "/trainData_2012_part2", "/TrainINKML_2013", "/MatricesTrain2014"]:
+for filename in ["/trainData_2012_part1", "/trainData_2012_part2","/MatricesTrain2014"]:#2011 2012 2012_2 2013, 2014["/TrainINKML_2013", "/CROHME_training_2011", "/trainData_2012_part1", "/trainData_2012_part2", "/MatricesTrain2014"]:
     files = os.listdir(path+filename)
     print("=====================================", filename, "=====================================")
     for file in tqdm(files):
         if file.endswith('.inkml'):
             inkml2img(path+filename+'/'+file,'./finaltrain/')
+            os.remove(path+filename+'/'+file)
     
 files = os.listdir(path+"/MatricesTest2014")
 for file in tqdm(files):
