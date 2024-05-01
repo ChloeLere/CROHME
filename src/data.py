@@ -58,9 +58,13 @@ def png_to_jpg(dir_path):
         for file in os.listdir(folder_path):
             fpath = os.path.join(folder_path, file)
             if fpath.endswith('.png'): 
-                im = Image.open(fpath).convert("RGB")
-                im.save(fpath[:-4] + '.jpg', quality=95, optimize=True) 
-                os.remove(fpath)
+                try:
+                    im = Image.open(fpath).convert("RGB")
+                    im.save(fpath[:-4] + '.jpg', quality=95, optimize=True) 
+                    os.remove(fpath)
+                except Exception as e:
+                    print("error file", fpath)
+
 
 def create_dataset():
     image_size = (128, 128)
@@ -98,6 +102,7 @@ def get_data():
     train, val, test = create_dataset()
     plot_pictures(train)
 
+    #NOTE : I don't know if we are going to keep this
     # Apply `data_augmentation` to the training images.
     train = train.map(
         lambda img, label: (data_augmentation(img), label),
@@ -108,6 +113,5 @@ def get_data():
     val = val.prefetch(tf_data.AUTOTUNE)
 
     visualise_augmentation(train)
+    return train, val, test
     
-
-get_data()
