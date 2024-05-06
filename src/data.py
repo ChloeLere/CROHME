@@ -14,22 +14,24 @@ data_augmentation_layers = [
 
 def plot_pictures(data):
     plt.figure(figsize=(10, 10))
+    plt.suptitle("Sample images and labels from our dataset")
+    plt.axis("off")
     for images, labels in data.take(1):
         for i in range(9):
             ax = plt.subplot(3, 3, i + 1)
             plt.imshow(np.array(images[i]).astype("uint8"))
             plt.title(data.class_names[int(labels[i])])
-            plt.axis("off")
     plt.show()
 
 def visualise_augmentation(data):
     plt.figure(figsize=(10, 10))
-    for images, _ in data.take(1):
+    plt.title(f"data augmentation of the character '3'.")
+    plt.axis("off")
+    for images, labels in data.take(1):
         for i in range(9):
             augmented_images = data_augmentation(images)
             ax = plt.subplot(3, 3, i + 1)
             plt.imshow(np.array(augmented_images[0]).astype("uint8"))
-            plt.axis("off")
     plt.show()
 
 def clean_corrupted(dir_name):
@@ -52,9 +54,9 @@ def clean_corrupted(dir_name):
     print(f"Deleted {num_skipped} images for {dir_name}.")
 
 def png_to_jpg(dir_path):
-
     for folder_name in os.listdir(dir_path):
         folder_path = os.path.join(dir_path, folder_name)
+        #print(folder_name)
         for file in os.listdir(folder_path):
             fpath = os.path.join(folder_path, file)
             if fpath.endswith('.png'): 
@@ -74,13 +76,13 @@ def create_dataset():
         "../handwritten-mathematical-expressions/finaltrain",
         validation_split=0.2,
         subset="both",
-        seed=1337,
+        seed=28,
         image_size=image_size,
         batch_size=batch_size,
     )
     test = keras.utils.image_dataset_from_directory(
         "../handwritten-mathematical-expressions/finaltest",
-        seed=1337,
+        seed=None,
         image_size=image_size,
         batch_size=batch_size,
     )
