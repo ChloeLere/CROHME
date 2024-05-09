@@ -102,7 +102,8 @@ def clean_data_files():
 def get_data():
     clean_data_files()
     train, val, test = create_dataset()
-    plot_pictures(train)
+    #plot_pictures(train)
+
 
     #NOTE : I don't know if we are going to keep this
     # Apply `data_augmentation` to the training images.
@@ -114,6 +115,6 @@ def get_data():
     train = train.prefetch(tf_data.AUTOTUNE)
     val = val.prefetch(tf_data.AUTOTUNE)
 
-    visualise_augmentation(train)
+    #visualise_augmentation(train)
     return train, val, test
     
