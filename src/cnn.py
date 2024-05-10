@@ -62,6 +62,20 @@ def build_model(num_classes, input_shape=(128, 128, 3)):
     outputs = layers.Dense(units, activation=None)(x)
     return keras.Model(inputs, outputs)
 
+def build_model_bad(num_classes, input_shape=(128, 128, 3)):
+    model = Sequential()
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.Dense(num_classes, activation='softmax'))
+    return model
+
+
 def compile_model(model, train, val):
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=0.0001),
@@ -70,6 +84,6 @@ def compile_model(model, train, val):
     )
     model.fit(
         train,
-        epochs=8,
+        epochs=5,#25
         validation_data=val,
     )
