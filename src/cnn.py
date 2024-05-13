@@ -117,3 +117,35 @@ class Cnn:
         all_actual_labels = np.array(all_actual_labels)
 
         return all_predictions, all_actual_labels
+    
+    def grid_search(self, grid, train, val, test):
+        best_score = 0
+        best_params = None
+        best_model = None
+
+        for lr in grid['learning_rate']:
+            for epoch in grid['epoch']:
+                model = self.build_model()
+                model.compile(
+                    optimizer=keras.optimizers.Adam(learning_rate=lr),
+                    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                    metrics=[keras.metrics.CategoricalAccuracy(name="acc")],
+                )
+                model.fit(
+                    train,
+                    epochs=epoch,
+                    validation_data=val,
+                )
+                loss, accuracy = model.evaluate(test)
+                if accuracy > best_score:
+                    best_score = accuracy
+                    best_params = {"learning_rate": lr, "epoch": epoch}
+                    best_model = model
+        
+        print("Best score:", best_score)
+        print("Best params: ", best_params)
+        
+        return best_score, best_params, best_model
+
+
+

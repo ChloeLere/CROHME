@@ -11,6 +11,16 @@ from svc import Svc
 from cnn import Cnn
 from evaluation import *
 
+def main():
+    train, val, test = get_data()
+
+    param_grid = {
+        'learning_rate': [0.001, 0.0001],
+        'epoch': [8, 16, 25, 32]
+    }
+    cnn = Cnn(84)
+    cnn.grid_search(param_grid, train, val, test)
+
 def main_cnn():
     train, val, test = get_data()
 
@@ -30,7 +40,7 @@ def main_cnn():
 
 
 
-def main():
+def main_svc():
     train, val, test = get_data()
     X_train_flat, y_train, X_test_flat, y_test = format_data_for_svn(train, test)
     # Define and train SVM classifier
