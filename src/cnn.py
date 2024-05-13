@@ -6,10 +6,15 @@ from keras.models import Sequential
 from keras import layers
 
 class Cnn:
-    def __init__(self, num_class=84):
+    def __init__(self, num_class=84, input_shape=(128, 128, 3)):
         self.num_class = num_class
+        self.input_shape = input_shape
+        self.model = self.build_model()
         
-    def build_model_simple(self, num_class):
+    def get_model(self):
+        return self.model
+    
+    def build_model_simple(self):
         num_filters = 8
         filter_size = 3
         pool_size = 2
@@ -18,12 +23,12 @@ class Cnn:
             Conv2D(num_filters, filter_size, input_shape=(128, 128, 3)),
             MaxPooling2D(pool_size=pool_size),
             Flatten(),
-            Dense(num_class, activation='softmax'),
+            Dense(self.num_class, activation='softmax'),
         ])
         return model
 
-    def build_model(self, num_classes, input_shape=(128, 128, 3)):
-        inputs = keras.Input(shape=input_shape)
+    def build_model(self):
+        inputs = keras.Input(shape=self.input_shape)
 
         # Entry block
         x = layers.Rescaling(1.0 / 255)(inputs)
@@ -56,19 +61,19 @@ class Cnn:
         x = layers.Activation("relu")(x)
 
         x = layers.GlobalAveragePooling2D()(x)
-        if num_classes == 2:
+        if self.num_class == 2:
             units = 1
         else:
-            units = num_classes
+            units = self.num_class
 
         x = layers.Dropout(0.25)(x)
         # We specify activation=None so as to return logits
         outputs = layers.Dense(units, activation=None)(x)
         return keras.Model(inputs, outputs)
 
-    def build_model_bad(self, num_classes, input_shape=(128, 128, 3)):
+    def build_model_bad(self):
         model = Sequential()
-        model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
+        model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=self.input_shape))
         model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(64, (3, 3), activation='relu'))
         model.add(layers.MaxPooling2D((2, 2)))
@@ -76,18 +81,39 @@ class Cnn:
         model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Flatten())
         model.add(layers.Dense(128, activation='relu'))
-        model.add(layers.Dense(num_classes, activation='softmax'))
+        model.add(layers.Dense(self.num_class, activation='softmax'))
         return model
 
 
-    def compile_model(self, model, train, val):
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+    def compile_model(self, train, val, nb_epoch=25, learning_rate=0.0001):
+        self.model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[keras.metrics.CategoricalAccuracy(name="acc")],
         )
-        model.fit(
+        self.model.fit(
             train,
-            epochs=2,#25
+            epochs=nb_epoch,
             validation_data=val,
         )
+    
+    def predict(self, test):
+        all_predictions = []
+        all_actual_labels = []
+
+        # Iterate through the test dataset
+        for images, labels in test:
+            # Perform prediction on the current batch
+            predictions = self.model.predict(images)
+            
+            # Convert predictions to classes (taking the index of the max value along axis 1)
+            predicted_classes = np.argmax(predictions, axis=1)
+            
+            # Store predicted classes and actual labels
+            all_predictions.extend(predicted_classes)
+            all_actual_labels.extend(labels.numpy())
+        
+        all_predictions = np.array(all_predictions)
+        all_actual_labels = np.array(all_actual_labels)
+
+        return all_predictions, all_actual_labels
