@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-from data import get_data
-from cnn import build_model, compile_model
+from data import get_data, format_data_for_svn
 import numpy as np
 from sklearn.metrics import f1_score
 import Levenshtein as lev
-from sklearn import svm 
 from sklearn.model_selection import GridSearchCV 
 from sklearn.model_selection import train_test_split 
 from sklearn.metrics import accuracy_score 
 from sklearn.metrics import classification_report
+from svc import Svc
+from cnn import Cnn
 
 def wer(reference, hypothesis):
     ref_words = reference.split()
@@ -22,13 +22,14 @@ def wer(reference, hypothesis):
     
     return wer
 
-def main_cnn():
+def main():
     print ("hello")
     train, val, test = get_data()
 
     #CNN : 
-    model = build_model(84)
-    compile_model(model, train, val)
+    cnn = Cnn(84)
+    model = cnn.build_model(84)
+    cnn.compile_model(model, train, val)
     #predictions = model.predict(test)
     #print(np.argmax(predictions, axis=1))
     #for images, labels in test:
@@ -117,19 +118,14 @@ def main_cnn():
 
 
 
-def main():
+def main_svn():
     train, val, test = get_data()
-    # Flatten images for SVM input
-    X_train, y_train = next(iter(train))
-    X_train_flat = np.array([x.flatten() for x in X_train.numpy()])
-    y_train = np.array(y_train)
-
+    X_train_flat, y_train, X_test_flat, y_test = format_data_for_svn(train, test)
     # Define and train SVM classifier
-    clf = svm.SVC()
-    clf.fit(X_train_flat, y_train)
+    svc = Svc(84)
+    clf = svc.build_model()
+    clf = svc.compile_model(clf, X_train_flat, y_train)
 
-    X_test, y_test = next(iter(test))
-    X_test_flat = np.array([x.flatten() for x in X_test.numpy()])
     y_test_pred = clf.predict(X_test_flat)
 
     # Calculate accuracy
