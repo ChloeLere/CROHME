@@ -11,7 +11,7 @@ from svc import Svc
 from cnn import Cnn
 from evaluation import *
 
-def main():
+def main_cnn():
     train, val, test = get_data()
 
     #CNN : 
@@ -30,12 +30,14 @@ def main():
 
 
 
-def main_svc():
+def main():
     train, val, test = get_data()
     X_train_flat, y_train, X_test_flat, y_test = format_data_for_svn(train, test)
     # Define and train SVM classifier
     svc = Svc(84)
-    svc.compile_model(X_train_flat, y_train)
+    param_grid = {'C': np.array([0.1, 1, 10, 100, 1000]), 'gamma': np.array([0.0001, 0.001, 0.01, 0.1, 10])}
+    svc.compile_model(X_train_flat, y_train, param_grid)
+    svc.display_grid_search_info()
 
     y_test_pred = svc.predict(X_test_flat)
 
