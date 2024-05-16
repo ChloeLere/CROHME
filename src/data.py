@@ -118,7 +118,7 @@ def get_data():
     #visualise_augmentation(train)
     return train, val, test
 
-def format_data_for_svn(train, test):
+def format_data_for_svc(train, test):
     # Flatten images for SVM input
     X_train, y_train = next(iter(train))
     X_train_flat = np.array([x.flatten() for x in X_train.numpy()])

@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 import keras
 from keras.models import Sequential
 from keras import layers
+import matplotlib.pyplot as plt
 
 class Cnn:
     def __init__(self, num_class=84, input_shape=(128, 128, 3)):
@@ -119,9 +120,10 @@ class Cnn:
         return all_predictions, all_actual_labels
     
     def grid_search(self, grid, train, val, test):
-        best_score = 0
+        best_score = -1
         best_params = None
         best_model = None
+        best_history = None
 
         for lr in grid['learning_rate']:
             for epoch in grid['epoch']:
@@ -131,21 +133,56 @@ class Cnn:
                     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                     metrics=[keras.metrics.CategoricalAccuracy(name="acc")],
                 )
-                model.fit(
+                history = model.fit(
                     train,
                     epochs=epoch,
                     validation_data=val,
                 )
                 loss, accuracy = model.evaluate(test)
+                print(f"========================Test with a learning rate : {lr} and a epoch of {epoch}. The accuracy is {accuracy}========================")
+                
                 if accuracy > best_score:
                     best_score = accuracy
                     best_params = {"learning_rate": lr, "epoch": epoch}
                     best_model = model
+                    best_history = history
+
         
         print("Best score:", best_score)
         print("Best params: ", best_params)
+        self.model = best_model
         
-        return best_score, best_params, best_model
+        return best_score, best_params, best_model, best_history
 
 
 
+    def display_history(self, history):
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
+        accuracy = history.history.get('acc')  # Note: Might be 'acc' depending on Keras version
+        val_accuracy = history.history.get('val_acc')  # Note: Might be 'val_acc' depending on Keras version
+
+        # Tracer les courbes de perte
+        plt.figure(figsize=(12, 4))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(loss, label='Training Loss')
+        plt.plot(val_loss, label='Validation Loss')
+        plt.title('Training and Validation Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+
+        # Tracer les courbes de précision
+        plt.subplot(1, 2, 2)
+        if accuracy and val_accuracy:  # Vérifiez si accuracy est dans l'historique
+            plt.plot(accuracy, label='Training Accuracy')
+            plt.plot(val_accuracy, label='Validation Accuracy')
+            plt.title('Training and Validation Accuracy')
+            plt.xlabel('Epochs')
+            plt.ylabel('Accuracy')
+            plt.legend()
+
+        plt.savefig("grid_search_results_cnn.png")
+        plt.show()
+        plt.close()
