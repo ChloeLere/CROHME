@@ -99,7 +99,7 @@ def inkml2img(input_path, output_path):
         plt.gcf().clear()
         plt.close(fig)
 
-for filename in ["/trainData_2012_part1", "/trainData_2012_part2","/MatricesTrain2014"]:#2011 2012 2012_2 2013, 2014["/TrainINKML_2013", "/CROHME_training_2011", "/trainData_2012_part1", "/trainData_2012_part2", "/MatricesTrain2014"]:
+for filename in ["/CROHME_training_2011", "/trainData_2012_part1", "/trainData_2012_part2","/MatricesTrain2014"]:
     files = os.listdir(path+filename)
     print("=====================================", filename, "=====================================")
     for file in tqdm(files):
