@@ -37,7 +37,7 @@ class Cnn:
         x = layers.BatchNormalization()(x)
         x = layers.Activation("relu")(x)
 
-        previous_block_activation = x  # Set aside residual
+        previous_block_activation = x
 
         for size in [256, 512, 728]:
             x = layers.Activation("relu")(x)
@@ -54,8 +54,8 @@ class Cnn:
             residual = layers.Conv2D(size, 1, strides=2, padding="same")(
                 previous_block_activation
             )
-            x = layers.add([x, residual])  # Add back residual
-            previous_block_activation = x  # Set aside next residual
+            x = layers.add([x, residual])
+            previous_block_activation = x
 
         x = layers.SeparableConv2D(1024, 3, padding="same")(x)
         x = layers.BatchNormalization()(x)
@@ -68,7 +68,6 @@ class Cnn:
             units = self.num_class
 
         x = layers.Dropout(0.25)(x)
-        # We specify activation=None so as to return logits
         outputs = layers.Dense(units, activation=None)(x)
         return keras.Model(inputs, outputs)
 
@@ -107,7 +106,7 @@ class Cnn:
             # Perform prediction on the current batch
             predictions = self.model.predict(images)
             
-            # Convert predictions to classes (taking the index of the max value along axis 1)
+            # Convert predictions to classes
             predicted_classes = np.argmax(predictions, axis=1)
             
             # Store predicted classes and actual labels
@@ -139,9 +138,9 @@ class Cnn:
                     validation_data=val,
                 )
                 loss, accuracy = model.evaluate(test)
-                print(f"========================Test with a learning rate : {lr} and a epoch of {epoch}. The accuracy is {accuracy}========================")
+                print(f"========================Test with a learning rate : {lr} and a epoch of {epoch}. The accuracy is {accuracy} and the loss {loss}========================")
                 
-                if accuracy > best_score:
+                if accuracy != 1 and accuracy > best_score:
                     best_score = accuracy
                     best_params = {"learning_rate": lr, "epoch": epoch}
                     best_model = model
@@ -154,15 +153,12 @@ class Cnn:
         
         return best_score, best_params, best_model, best_history
 
-
-
     def display_history(self, history):
         loss = history.history['loss']
         val_loss = history.history['val_loss']
-        accuracy = history.history.get('acc')  # Note: Might be 'acc' depending on Keras version
-        val_accuracy = history.history.get('val_acc')  # Note: Might be 'val_acc' depending on Keras version
+        accuracy = history.history.get('acc')
+        val_accuracy = history.history.get('val_acc')
 
-        # Tracer les courbes de perte
         plt.figure(figsize=(12, 4))
 
         plt.subplot(1, 2, 1)
@@ -173,9 +169,8 @@ class Cnn:
         plt.ylabel('Loss')
         plt.legend()
 
-        # Tracer les courbes de précision
         plt.subplot(1, 2, 2)
-        if accuracy and val_accuracy:  # Vérifiez si accuracy est dans l'historique
+        if accuracy and val_accuracy:
             plt.plot(accuracy, label='Training Accuracy')
             plt.plot(val_accuracy, label='Validation Accuracy')
             plt.title('Training and Validation Accuracy')
@@ -183,6 +178,6 @@ class Cnn:
             plt.ylabel('Accuracy')
             plt.legend()
 
-        plt.savefig("grid_search_results_cnn.png")
+        plt.savefig("grid_search_results_cnn6.png")
         plt.show()
         plt.close()

@@ -49,14 +49,12 @@ def clean_corrupted(dir_name):
 
                 if not is_jfif:
                     num_skipped += 1
-                    # Delete corrupted image
                     os.remove(fpath)
     print(f"Deleted {num_skipped} images for {dir_name}.")
 
 def png_to_jpg(dir_path):
     for folder_name in os.listdir(dir_path):
         folder_path = os.path.join(dir_path, folder_name)
-        #print(folder_name)
         for file in os.listdir(folder_path):
             fpath = os.path.join(folder_path, file)
             if fpath.endswith('.png'): 
@@ -102,21 +100,18 @@ def clean_data_files():
 def get_data():
     clean_data_files()
     train, val, test = create_dataset()
+    class_names_test = test.class_names
     #plot_pictures(train)
 
-
-    #NOTE : I don't know if we are going to keep this
-    # Apply `data_augmentation` to the training images.
     train = train.map(
         lambda img, label: (data_augmentation(img), label),
         num_parallel_calls=tf_data.AUTOTUNE,
     )
-    # Prefetching samples in GPU memory helps maximize GPU utilization.
     train = train.prefetch(tf_data.AUTOTUNE)
     val = val.prefetch(tf_data.AUTOTUNE)
 
     #visualise_augmentation(train)
-    return train, val, test
+    return train, val, test, class_names_test
 
 def format_data_for_svc(train, test):
     # Flatten images for SVM input
