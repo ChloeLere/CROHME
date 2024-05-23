@@ -4,10 +4,6 @@ import numpy as np
 from svc import Svc
 from cnn import Cnn
 from evaluation import *
-import seaborn as sn
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
 
 def main():
     #get data 
